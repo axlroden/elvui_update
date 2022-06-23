@@ -26,12 +26,12 @@ jobs:
     - name: install dependencies
       run: |
         cd src
-        pip install --upgrade pip wheel -r requirements.txt
+        pip install --upgrade pip wheel pyinstaller -r requirements.txt
  
     - name: build binary
       run: |
         cd src
-        pipenv run pyinstaller --clean -y elvui_update.spec
+        pyinstaller --clean -y elvui_update.spec
 
     - uses: actions/upload-artifact@v2
       with:
