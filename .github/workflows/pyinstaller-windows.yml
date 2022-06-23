@@ -1,0 +1,58 @@
+name: Package exe with PyInstaller - Windows
+
+on:
+  push:
+    paths:
+      - 'version'
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions: write-all
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: get version
+      run: |
+        chcp 65001 #set code page to utf-8
+        echo ("ELVUP_VERSION=" + $(cat version)) >> $env:GITHUB_ENV
+
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        cache: 'pipenv'
+ 
+    - name: install dependencies
+      run: |
+        cd src
+        pip install --upgrade pip wheel pipenv
+        pipenv install
+ 
+    - name: build binary
+      run: |
+        cd src
+        pipenv run pyinstaller --clean -y elvui_update.spec
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: elvupd
+        path: "src/dist/*"
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
+      with:
+        type: "zip"
+        directory: src/dist/
+        filename: "ElvUI-Update-${{ env.ELVUP_VERSION }}.zip"
+        path: "elvupd.exe"
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "src/dist/ElvUI-Update-${{ env.ELVUP_VERSION }}.zip"
+        tag_name: "${{ env.ELVUP_VERSION }}"
+        body_path: changelog.txt
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
