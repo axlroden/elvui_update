@@ -44,7 +44,7 @@ jobs:
         type: "zip"
         directory: src/dist/
         filename: "ElvUI-Update-${{ env.ELVUP_VERSION }}.zip"
-        path: "elvupd.exe"
+        path: "elvui_update.exe"
 
     - name: Release
       uses: softprops/action-gh-release@v1
