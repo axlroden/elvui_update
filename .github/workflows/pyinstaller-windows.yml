@@ -27,8 +27,7 @@ jobs:
     - name: install dependencies
       run: |
         cd src
-        pip install --upgrade pip wheel pipenv
-        pipenv install
+        pip install --upgrade pip wheel -r requirements.txt
  
     - name: build binary
       run: |
