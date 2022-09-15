@@ -18,7 +18,7 @@ def query_api():
 
 def local_version(wow_dir):
     ''' Return version of local ELVUI install '''
-    toc_loc = wow_dir + '\\interface\\addons\\ElvUI\\ElvUI_Wrath.toc'
+    toc_loc = wow_dir + '\\_classic_\\interface\\addons\\ElvUI\\ElvUI_Wrath.toc'
     # Read addon TOC file
     try:
         toc = open(toc_loc, 'r')
@@ -46,7 +46,7 @@ def update(wow_dir, url):
     elvui_zip = zipfile.ZipFile(local_filename, 'r')
 
     # Extract to addons folder
-    elvui_zip.extractall(path='{:s}{:s}'.format(wow_dir, '\\interface\\addons\\'))
+    elvui_zip.extractall(path='{:s}{:s}'.format(wow_dir, '\\_classic_\\interface\\addons\\'))
 
     # Cleanup
     elvui_zip.close()
