@@ -5,19 +5,20 @@ import requests
 import productdb_pb2
 from lxml import html
 
-def prod_version():
-    ''' Return current live version of ELVUI '''
-    tukui_api = requests.get("https://www.tukui.org/api.php?classic-tbc-addons")
+def query_api():
+    ''' Return current live version of ELVUI and url '''
+    tukui_api = requests.get("https://www.tukui.org/api.php?classic-wotlk-addons")
     tukui_api = tukui_api.json()
     for addon in tukui_api:
         if addon["name"] == "ElvUI":
             online_version = addon["version"]
+            url = addon["url"]
             break
-    return online_version
+    return online_version, url
 
 def local_version(wow_dir):
     ''' Return version of local ELVUI install '''
-    toc_loc = wow_dir + '\\interface\\addons\\ElvUI\\ElvUI_TBC.toc'
+    toc_loc = wow_dir + '\\interface\\addons\\ElvUI\\ElvUI_Wrath.toc'
     # Read addon TOC file
     try:
         toc = open(toc_loc, 'r')
@@ -30,11 +31,11 @@ def local_version(wow_dir):
     version = re.search('(?<=Version: ).*', toc_lines[3])
     return version.group(0)
 
-def update(wow_dir):
+def update(wow_dir, url):
     ''' Download and install newest ELVUI '''
     # Download zip
     local_filename = 'elvui.zip'
-    req = requests.get('https://www.tukui.org/classic-tbc-addons.php?download=2', stream=True)
+    req = requests.get('url', stream=True)
 
     with open(local_filename, 'wb') as download:
         for chunk in req.iter_content(chunk_size=1024):
@@ -57,14 +58,14 @@ def main():
     wow_dir = installpath()
     # Get local and prod versions
     local = local_version(wow_dir)
-    prod = prod_version()
+    prod, url = query_api()
 
     print('Installed Version: {}'.format(local))
     print('Live Version: {}'.format(prod))
 
     if local != prod:
         print('Updating...')
-        update(wow_dir)
+        update(wow_dir, url)
         print('Update Complete')
 
 
