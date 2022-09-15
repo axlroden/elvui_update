@@ -35,7 +35,7 @@ def update(wow_dir, url):
     ''' Download and install newest ELVUI '''
     # Download zip
     local_filename = 'elvui.zip'
-    req = requests.get('url', stream=True)
+    req = requests.get(url, stream=True)
 
     with open(local_filename, 'wb') as download:
         for chunk in req.iter_content(chunk_size=1024):
@@ -62,6 +62,7 @@ def main():
 
     print('Installed Version: {}'.format(local))
     print('Live Version: {}'.format(prod))
+    print('Url: {}'.format(url))
 
     if local != prod:
         print('Updating...')
