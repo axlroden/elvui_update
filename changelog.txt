@@ -2,3 +2,5 @@
 Initial release
 1.1.2
 tukui api change, Wrath
+1.1.3
+Changelog to console
