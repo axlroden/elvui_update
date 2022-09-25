@@ -1,9 +1,12 @@
 import os
 import re
+import time
 import zipfile
 import requests
 import productdb_pb2
-from lxml import html
+import urllib.request
+from inscriptis import get_text
+
 
 def query_api():
     ''' Return current live version of ELVUI and url '''
@@ -68,7 +71,13 @@ def main():
         print('Updating...')
         update(wow_dir, url)
         print('Update Complete')
-
+        url = "https://www.tukui.org/ui/elvui/changelog"
+        html = urllib.request.urlopen(url).read().decode('utf-8')
+        current_changelog = html.split("<u>", 2)
+        text = get_text(current_changelog[1])
+        print(text)
+        # sleep 60 secs so there is time to read.
+        time.sleep(60)
 
 def installpath():
     productdb_path = os.getenv('ALLUSERSPROFILE') + "\\Battle.net\\Agent\\product.db"
