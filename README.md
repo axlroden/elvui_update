@@ -4,7 +4,8 @@ A script for automatically updating ELVUI Wrath when a new version is released.
 
 ## What it does:
 This program will query the tukui API to determine if the local version matches the current release. The new version will be downloaded and installed if there is a version mismatch.
-It finds the WoW TBC folder automatically.
+It finds the WoW folder automatically.
+Added output of changelog to console.
 
 ## Install the exe by scheduling a task:
 ###### Windows
