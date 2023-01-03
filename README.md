@@ -5,6 +5,7 @@ A script for automatically updating ELVUI Wrath/Retail when a new version is rel
 ## What it does:
 This program will query the tukui API to determine if the local version matches the current release. The new version will be downloaded and installed if there is a version mismatch.
 It finds the WoW folders automatically.
+Added output of changelog to console.
 
 ## Install the exe by scheduling a task:
 ###### Windows
