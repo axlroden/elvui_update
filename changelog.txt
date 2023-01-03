@@ -4,3 +4,5 @@ Initial release
 tukui api change, Wrath
 1.1.3
 Changelog to console
+1.1.4
+Add retail support

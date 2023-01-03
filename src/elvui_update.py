@@ -8,9 +8,9 @@ import urllib.request
 from inscriptis import get_text
 
 
-def query_api():
+def query_api(apiurl):
     ''' Return current live version of ELVUI and url '''
-    tukui_api = requests.get("https://www.tukui.org/api.php?classic-wotlk-addons")
+    tukui_api = requests.get(apiurl)
     tukui_api = tukui_api.json()
     for addon in tukui_api:
         if addon["name"] == "ElvUI":
@@ -19,9 +19,9 @@ def query_api():
             break
     return online_version, url
 
-def local_version(wow_dir):
+def local_version(folder):
     ''' Return version of local ELVUI install '''
-    toc_loc = wow_dir + '\\_classic_\\interface\\addons\\ElvUI\\ElvUI_Wrath.toc'
+    toc_loc = folder + 'ElvUI\\ElvUI_Mainline.toc'
     # Read addon TOC file
     try:
         toc = open(toc_loc, 'r')
@@ -34,7 +34,8 @@ def local_version(wow_dir):
     version = re.search('(?<=Version: ).*', toc_lines[3])
     return version.group(0)
 
-def update(wow_dir, url):
+
+def update(folder, url):
     ''' Download and install newest ELVUI '''
     # Download zip
     local_filename = 'elvui.zip'
@@ -48,9 +49,8 @@ def update(wow_dir, url):
     # Unzip
     elvui_zip = zipfile.ZipFile(local_filename, 'r')
 
-    # Extract to addons folder
-    elvui_zip.extractall(path='{:s}{:s}'.format(wow_dir, '\\_classic_\\interface\\addons\\'))
-
+# Extract to addons folder
+    elvui_zip.extractall(path='{:s}'.format(folder))
     # Cleanup
     elvui_zip.close()
     os.remove(local_filename)
@@ -58,19 +58,33 @@ def update(wow_dir, url):
 def main():
     ''' Update if version mismatch '''
     # Identify local install
-    wow_dir = installpath()
+    classic_path, retail_path = installpath()
+    updated = False
     # Get local and prod versions
-    local = local_version(wow_dir)
-    prod, url = query_api()
+    # The live API does not have ElvUI ...
+    prod, url = query_api('https://www.tukui.org/api.php?classic-wotlk-addons')
+    if classic_path is not None:
+        classic_local = local_version(classic_path)
+        print('Installed classic version: {}'.format(classic_local))
+        print('Current classic version: {}'.format(prod))
+        # print('Url: {}'.format(url))
+        if classic_local != prod:
+            print('Updating..')
+            update(classic_path, url)
+            print('Update complete')
+            updated = True
 
-    print('Installed Version: {}'.format(local))
-    print('Live Version: {}'.format(prod))
-    print('Url: {}'.format(url))
-
-    if local != prod:
-        print('Updating...')
-        update(wow_dir, url)
-        print('Update Complete')
+    if retail_path is not None:
+        retail_local = local_version(retail_path)
+        print('Installed retail version: {}'.format(retail_local))
+        print('Current retail version: {}'.format(prod))
+        # print('Url: {}'.format(url))
+        if retail_local != prod:
+            print('Updating..')
+            update(retail_path, url)
+            print('Update complete')
+            updated = True
+    if updated is True:
         url = "https://www.tukui.org/ui/elvui/changelog"
         html = urllib.request.urlopen(url).read().decode('utf-8')
         current_changelog = html.split("<u>", 2)
@@ -81,6 +95,8 @@ def main():
 
 def installpath():
     productdb_path = os.getenv('ALLUSERSPROFILE') + "\\Battle.net\\Agent\\product.db"
+    wow_classic_path = None
+    wow_retail_path = None
     if os.path.exists(productdb_path):
         f = open(productdb_path, "rb")
         db = productdb_pb2.Database()
@@ -90,10 +106,11 @@ def installpath():
         for entry in productinstalls:
             if entry.productCode == "wow_classic":
                 wow_classic_path = entry.settings.installPath.replace("/", "\\")
-                break
-        return wow_classic_path
-    else:
-        return ""
+                wow_classic_path = wow_classic_path + "\\_classic_\\interface\\addons\\"
+            if entry.productCode == "wow":
+                wow_retail_path = entry.settings.installPath.replace("/", "\\")
+                wow_retail_path = wow_retail_path + "\\_retail_\\interface\\addons\\"
+    return wow_classic_path, wow_retail_path
 
 if __name__ == '__main__':
     main()
