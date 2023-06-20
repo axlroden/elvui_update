@@ -4,19 +4,14 @@ import time
 import zipfile
 import requests
 import productdb_pb2
-import urllib.request
-from inscriptis import get_text
 
 
 def query_api(apiurl):
     ''' Return current live version of ELVUI and url '''
     tukui_api = requests.get(apiurl)
-    tukui_api = tukui_api.json()
-    for addon in tukui_api:
-        if addon["name"] == "ElvUI":
-            online_version = addon["version"]
-            url = addon["url"]
-            break
+    jsondata = tukui_api.json()
+    online_version = jsondata["version"]
+    url = jsondata["url"]
     return online_version, url
 
 def local_version(folder):
@@ -61,8 +56,7 @@ def main():
     classic_path, retail_path = installpath()
     updated = False
     # Get local and prod versions
-    # The live API does not have ElvUI ...
-    prod, url = query_api('https://www.tukui.org/api.php?classic-wotlk-addons')
+    prod, url = query_api('https://api.tukui.org/v1/addon/elvui')
     if classic_path is not None:
         classic_local = local_version(classic_path)
         print('Installed classic version: {}'.format(classic_local))
@@ -85,13 +79,26 @@ def main():
             print('Update complete')
             updated = True
     if updated is True:
-        url = "https://www.tukui.org/ui/elvui/changelog"
-        html = urllib.request.urlopen(url).read().decode('utf-8')
-        current_changelog = html.split("<u>", 2)
-        text = get_text(current_changelog[1])
-        print(text)
+        url = "https://api.tukui.org/v1/changelog/elvui"
+        text = requests.get(url)
+        get_changelog(text)
         # sleep 60 secs so there is time to read.
         time.sleep(60)
+
+def get_changelog(changelog):
+    pattern = r"## Version (\d+\.\d+) \[ [^\]]+ \]\n([\s\S]*?)(?=\n\n## Version|$)"
+    match = re.search(pattern, changelog)
+
+    if match:
+        latest_version = match.group(1)
+        latest_points = match.group(2).strip()
+    else:
+        latest_version = None
+        latest_points = None
+
+# Print the latest version and points
+    print(f"Latest Version: {latest_version}")
+    print(f"\n{latest_points}")
 
 def installpath():
     productdb_path = os.getenv('ALLUSERSPROFILE') + "\\Battle.net\\Agent\\product.db"
