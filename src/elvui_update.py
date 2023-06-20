@@ -81,7 +81,7 @@ def main():
     if updated is True:
         url = "https://api.tukui.org/v1/changelog/elvui"
         text = requests.get(url)
-        get_changelog(text)
+        get_changelog(text.text)
         # sleep 60 secs so there is time to read.
         time.sleep(60)
 
