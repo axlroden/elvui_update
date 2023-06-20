@@ -7,6 +7,8 @@ This program will query the tukui API to determine if the local version matches 
 It finds the WoW folders automatically.
 Added output of changelog to console.
 
+Windows Defender does not like this, turn off real time protection, and allow the file once you put it on your desktop. You can see the source and build script here on github, so nothing to worry about.
+
 ## Install the exe by scheduling a task:
 ###### Windows
 1. If Task Scheduler is not open, start Task Scheduler. For more information, see Start Task Scheduler.
