@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_elvui_update_1689756506491-push-trigger-input-set
+  identifier: Build_elvui_update_1689756506491pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_elvui_update_1689756506491
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
