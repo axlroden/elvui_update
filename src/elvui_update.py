@@ -5,119 +5,75 @@ import zipfile
 import requests
 import productdb_pb2
 
-
 def query_api(apiurl):
-    ''' Return current live version of ELVUI and url '''
-    tukui_api = requests.get(apiurl)
-    jsondata = tukui_api.json()
-    online_version = jsondata["version"]
-    url = jsondata["url"]
-    return online_version, url
+    response = requests.get(apiurl)
+    data = response.json()
+    return data["version"], data["url"]
 
 def local_version(folder):
-    ''' Return version of local ELVUI install '''
-    toc_loc = folder + 'ElvUI\\ElvUI_Mainline.toc'
-    # Read addon TOC file
+    toc_loc = os.path.join(folder, 'ElvUI', 'ElvUI_Mainline.toc')
     try:
-        toc = open(toc_loc, 'r')
-        toc_lines = toc.readlines()
-        toc.close()
+        with open(toc_loc, 'r') as toc:
+            version = re.search(r'(?<=Version: ).*', toc.read()).group(0)
+        return version
     except FileNotFoundError:
         return 'Not Installed'
 
-    # Parse version string
-    version = re.search('(?<=Version: ).*', toc_lines[3])
-    return version.group(0)
-
-
-def update(folder, url):
-    ''' Download and install newest ELVUI '''
-    # Download zip
+def download_and_install(url, folder):
     local_filename = 'elvui.zip'
     req = requests.get(url, stream=True)
-
     with open(local_filename, 'wb') as download:
         for chunk in req.iter_content(chunk_size=1024):
             if chunk:
                 download.write(chunk)
-
-    # Unzip
-    elvui_zip = zipfile.ZipFile(local_filename, 'r')
-
-# Extract to addons folder
-    elvui_zip.extractall(path='{:s}'.format(folder))
-    # Cleanup
-    elvui_zip.close()
+    with zipfile.ZipFile(local_filename, 'r') as elvui_zip:
+        elvui_zip.extractall(path=folder)
     os.remove(local_filename)
 
 def main():
-    ''' Update if version mismatch '''
-    # Identify local install
-    classic_path, retail_path = installpath()
-    updated = False
-    # Get local and prod versions
+    classic_era_path, classic_path, retail_path = installpath()
     prod, url = query_api('https://api.tukui.org/v1/addon/elvui')
-    if classic_path is not None:
-        classic_local = local_version(classic_path)
-        print('Installed classic version: {}'.format(classic_local))
-        print('Current classic version: {}'.format(prod))
-        # print('Url: {}'.format(url))
-        if classic_local != prod:
-            print('Updating..')
-            update(classic_path, url)
-            print('Update complete')
-            updated = True
+    
+    for path, label in [(classic_path, "classic"), (classic_era_path, "classic_era"), (retail_path, "retail")]:
+        if path is not None:
+            local = local_version(path)
+            print(f'Installed {label} version: {local}')
+            print(f'Current {label} version: {prod}')
+            if local != prod:
+                print(f'Updating {label}..')
+                download_and_install(url, path)
+                print(f'Update complete for {label}')
 
-    if retail_path is not None:
-        retail_local = local_version(retail_path)
-        print('Installed retail version: {}'.format(retail_local))
-        print('Current retail version: {}'.format(prod))
-        # print('Url: {}'.format(url))
-        if retail_local != prod:
-            print('Updating..')
-            update(retail_path, url)
-            print('Update complete')
-            updated = True
-    if updated is True:
-        url = "https://api.tukui.org/v1/changelog/elvui"
-        text = requests.get(url)
-        get_changelog(text.text)
-        # sleep 60 secs so there is time to read.
-        time.sleep(60)
+    url = "https://api.tukui.org/v1/changelog/elvui"
+    text = requests.get(url).text
+    get_changelog(text)
+    time.sleep(60)
 
 def get_changelog(changelog):
-    pattern = r"## Version (\d+\.\d+) \[ [^\]]+ \]\n([\s\S]*?)(?=\n\n## Version|$)"
-    match = re.search(pattern, changelog)
+    lines = changelog.split('\n')
 
-    if match:
-        latest_version = match.group(1)
-        latest_points = match.group(2).strip()
-    else:
-        latest_version = None
-        latest_points = None
+    found_version = False
 
-# Print the latest version and points
-    print(f"Latest Version: {latest_version}")
-    print(f"\n{latest_points}")
+    for line in lines:
+        if line.startswith("## Version"):
+            if found_version:
+                break
+            else:
+                found_version = True
+        if found_version:
+            print(line.replace('\\', ''))
 
 def installpath():
-    productdb_path = os.getenv('ALLUSERSPROFILE') + "\\Battle.net\\Agent\\product.db"
-    wow_classic_path = None
-    wow_retail_path = None
+    productdb_path = os.path.join(os.getenv('ALLUSERSPROFILE'), 'Battle.net', 'Agent', 'product.db')
+    paths = {}
     if os.path.exists(productdb_path):
-        f = open(productdb_path, "rb")
-        db = productdb_pb2.Database()
-        db.ParseFromString(f.read())
-        f.close()
-        productinstalls = db.productInstall
-        for entry in productinstalls:
-            if entry.productCode == "wow_classic":
-                wow_classic_path = entry.settings.installPath.replace("/", "\\")
-                wow_classic_path = wow_classic_path + "\\_classic_\\interface\\addons\\"
-            if entry.productCode == "wow":
-                wow_retail_path = entry.settings.installPath.replace("/", "\\")
-                wow_retail_path = wow_retail_path + "\\_retail_\\interface\\addons\\"
-    return wow_classic_path, wow_retail_path
+        with open(productdb_path, "rb") as f:
+            db = productdb_pb2.Database()
+            db.ParseFromString(f.read())
+            for entry in db.productInstall:
+                code, installPath, extra = entry.productCode, entry.settings.installPath.replace("/", "\\"), entry.settings.productExtra
+                paths[code] = os.path.join(installPath, extra, 'interface', 'addons')
+    return paths.get('wow_classic_era'), paths.get('wow_classic'), paths.get('wow')
 
 if __name__ == '__main__':
     main()
