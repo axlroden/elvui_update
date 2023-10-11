@@ -8,3 +8,5 @@ Changelog to console
 Add retail support
 1.1.5
 New api system
+1.1.6
+All versions
