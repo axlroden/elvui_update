@@ -59,16 +59,16 @@ def get_changelog(changelog):
     for line in lines:
         if line.startswith("### Version"):
             if in_version:
-                print("\n")  # Add a newline between different versions for clarity
+                break  # Stop after the first version details have been printed
             print(line.replace('\\', ''))
             in_version = True
-        elif in_version and (line.startswith("###") or line.strip() == ""):
-            # Stop when the next version or empty line (between entries) is encountered
-            continue
         elif in_version:
+            if line.strip() == "":
+                continue  # Skip empty lines within the version block
             print(line.replace('\\', '').strip())
 
-    print("\n")  # Add a final newline for the last version if necessary
+    print("\n")  # Add a final newline for better readability
+
 
 def installpath():
     productdb_path = os.path.join(os.getenv('ALLUSERSPROFILE'), 'Battle.net', 'Agent', 'product.db')

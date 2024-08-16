@@ -12,3 +12,5 @@ New api system
 All versions
 1.1.7
 Adjust for v in local files, and changelog
+1.1.8
+Changelog only latest version
