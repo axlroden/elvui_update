@@ -10,3 +10,5 @@ Add retail support
 New api system
 1.1.6
 All versions
+1.1.7
+Adjust for v in local files, and changelog

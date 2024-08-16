@@ -15,9 +15,12 @@ def local_version(folder):
     try:
         with open(toc_loc, 'r') as toc:
             version = re.search(r'(?<=Version: ).*', toc.read()).group(0)
+            # Remove any "v" prefix for comparison purposes
+            version = version.lstrip('v').strip()
         return version
     except FileNotFoundError:
         return 'Not Installed'
+
 
 def download_and_install(url, folder):
     local_filename = 'elvui.zip'
@@ -51,17 +54,21 @@ def main():
 
 def get_changelog(changelog):
     lines = changelog.split('\n')
-
-    found_version = False
+    in_version = False
 
     for line in lines:
-        if line.startswith("## Version"):
-            if found_version:
-                break
-            else:
-                found_version = True
-        if found_version:
+        if line.startswith("### Version"):
+            if in_version:
+                print("\n")  # Add a newline between different versions for clarity
             print(line.replace('\\', ''))
+            in_version = True
+        elif in_version and (line.startswith("###") or line.strip() == ""):
+            # Stop when the next version or empty line (between entries) is encountered
+            continue
+        elif in_version:
+            print(line.replace('\\', '').strip())
+
+    print("\n")  # Add a final newline for the last version if necessary
 
 def installpath():
     productdb_path = os.path.join(os.getenv('ALLUSERSPROFILE'), 'Battle.net', 'Agent', 'product.db')
