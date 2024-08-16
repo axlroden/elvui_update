@@ -1,6 +1,6 @@
 
 # elvui_update
-A script for automatically updating ELVUI Wrath/Retail when a new version is released.
+A script for automatically updating ELVUI SoD/Classic/Retail when a new version is released.
 
 ## What it does:
 This program will query the tukui API to determine if the local version matches the current release. The new version will be downloaded and installed if there is a version mismatch.
