@@ -34,10 +34,10 @@ def download_and_install(url, folder):
     os.remove(local_filename)
 
 def main():
-    classic_era_path, classic_path, retail_path = installpath()
+    classic_era_path, classic_path, anniversary_path, retail_path = installpath()
     prod, url = query_api('https://api.tukui.org/v1/addon/elvui')
     
-    for path, label in [(classic_path, "classic"), (classic_era_path, "classic_era"), (retail_path, "retail")]:
+    for path, label in [(classic_path, "classic"), (classic_era_path, "classic_era"), (anniversary_path, "anniversary"), (retail_path, "retail")]:
         if path is not None:
             local = local_version(path)
             print(f'Installed {label} version: {local}')
@@ -80,7 +80,7 @@ def installpath():
             for entry in db.productInstall:
                 code, installPath, extra = entry.productCode, entry.settings.installPath.replace("/", "\\"), entry.settings.productExtra
                 paths[code] = os.path.join(installPath, extra, 'interface', 'addons')
-    return paths.get('wow_classic_era'), paths.get('wow_classic'), paths.get('wow')
+    return paths.get('wow_classic_era'), paths.get('wow_classic'), paths.get('wow_anniversary'), paths.get('wow')
 
 if __name__ == '__main__':
     main()
