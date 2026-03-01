@@ -14,3 +14,5 @@ All versions
 Adjust for v in local files, and changelog
 1.1.8
 Changelog only latest version
+1.1.9
+Add WoW Anniversary edition support
