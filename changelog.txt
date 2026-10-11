@@ -1,16 +1,22 @@
-1.0.0
-Initial release
-1.1.2
-tukui api change, Wrath
-1.1.3
-Changelog to console
-1.1.4
-Add retail support
-1.1.5
-New api system
-1.1.6
-All versions
-1.1.7
-Adjust for v in local files, and changelog
+2.0.0
+Rewritten in Rust: one small binary (~1.7 MB) for Windows, macOS and Linux, no Python needed.
+Finds every WoW install Battle.net lists, including classic beta; Linux support via Wine/Lutris/Proton/Bottles.
+Handles ElvUI's new single ElvUI.toc, does clean installs, retries on network errors and shows errors instead of crashing.
+--path, --force, --wait and --no-changelog options.
+
 1.1.8
 Changelog only latest version
+1.1.7
+Adjust for v in local files, and changelog
+1.1.6
+All versions
+1.1.5
+New api system
+1.1.4
+Add retail support
+1.1.3
+Changelog to console
+1.1.2
+tukui api change, Wrath
+1.0.0
+Initial release
