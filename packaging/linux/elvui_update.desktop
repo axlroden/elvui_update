@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ElvUI Updater
+Comment=Update ElvUI in every World of Warcraft install
+Exec=elvui_update --wait 60
+Icon=elvui_update
+Terminal=true
+Categories=Game;Utility;

@@ -1,6 +1,6 @@
 [package]
 name = "elvui_update"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 description = "Keeps ElvUI up to date in every World of Warcraft install"
 license = "GPL-3.0"

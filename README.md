@@ -1,3 +1,5 @@
+<img src="assets/icon.png" width="96" align="right" alt="">
+
 # elvui_update
 
 Keeps ElvUI up to date in every World of Warcraft install on your machine. Works on Windows, macOS and Linux.
@@ -23,7 +25,7 @@ elvui_update --path "/path/to/World of Warcraft/_retail_/Interface/AddOns"
 --path <dir>      AddOns folder to update (repeatable); skips Battle.net detection
 --force           Reinstall even if already up to date
 --no-changelog    Don't print the changelog
---wait <seconds>  Keep the window open when done (default: 60 on Windows, 0 elsewhere)
+--wait <seconds>  Keep the window open when done (default: 60 on Windows and in the macOS app, 0 elsewhere)
 --version         Print version and exit
 ```
 
@@ -31,11 +33,13 @@ elvui_update --path "/path/to/World of Warcraft/_retail_/Interface/AddOns"
 
 Grab the binary for your platform from the [releases page](https://github.com/axlroden/elvui_update/releases):
 
-- `elvui_update-windows.exe`
-- `elvui_update-macos` (universal: Intel and Apple Silicon)
-- `elvui_update-linux` (static, x86_64)
+- **Windows:** `elvui_update-windows.exe`. Double-click it.
+- **macOS:** `elvui_update-macos-app.zip`. Unzip and move **ElvUI Updater** to Applications; it opens in Terminal when you start it. Universal (Intel and Apple Silicon).
+- **Linux:** `elvui_update-linux.tar.gz`. Unpack and run `./install.sh` to get **ElvUI Updater** in your app menu (installs to `~/.local`). Static x86_64.
 
-On macOS and Linux, make it executable first: `chmod +x elvui_update-macos`. macOS will block an unsigned download the first time; allow it under System Settings > Privacy & Security, or run `xattr -d com.apple.quarantine elvui_update-macos`.
+The bare binaries `elvui_update-macos` and `elvui_update-linux` are there too, for scripts and cron. Make them executable first: `chmod +x elvui_update-linux`.
+
+macOS blocks unsigned downloads the first time. Allow it under System Settings > Privacy & Security ("Open Anyway"), or run `xattr -dr com.apple.quarantine "ElvUI Updater.app"`.
 
 ## Run it on a schedule
 
@@ -49,4 +53,6 @@ On macOS and Linux, make it executable first: `chmod +x elvui_update-macos`. mac
 cargo build --release
 ```
 
-Pushing a change to the version in `Cargo.toml` builds all three platforms on GitHub Actions and publishes a release.
+Pushing a change to the version in `Cargo.toml` builds all three platforms on GitHub Actions and publishes a release. Pull requests get the same build without the release.
+
+The icon lives in `assets/`. After editing `icon.svg` (or `icon-small.svg`, the simplified one for 16-32 px), regenerate the `.ico`, `.icns` and `.png` with `python assets/make_icons.py` (needs `pip install resvg-py pillow`).
