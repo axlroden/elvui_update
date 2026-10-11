@@ -1,19 +1,52 @@
-
 # elvui_update
-A script for automatically updating ELVUI SoD/Classic/Retail when a new version is released.
 
-## What it does:
-This program will query the tukui API to determine if the local version matches the current release. The new version will be downloaded and installed if there is a version mismatch.
-It finds the WoW folders automatically.
-Added output of changelog to console.
+Keeps ElvUI up to date in every World of Warcraft install on your machine. Works on Windows, macOS and Linux.
 
-Windows Defender does not like this, turn off real time protection, and allow the file once you put it on your desktop. You can see the source and build script here on github, so nothing to worry about.
+## What it does
 
-## Install the exe by scheduling a task:
-###### Windows
-1. If Task Scheduler is not open, start Task Scheduler. For more information, see Start Task Scheduler.
-2. Find and click the task folder in the console tree that you want to create the task in. For more information about how to create the task in a new task folder, see Create a New Task Folder.
-3. In the Actions Pane, click Create Basic Task.
-4. Follow the instructions in the Create Basic Task Wizard.
-    
-Instructions from: [MS Technet](https://technet.microsoft.com/en-us/library/cc748993(v=ws.11).aspx#BKMK_winui)
+- Reads Battle.net's install list to find your WoW installs (retail, classic, classic era, beta, anything Battle.net lists).
+- Asks the tukui API for the latest ElvUI version and compares it with what's installed.
+- If they differ, it downloads ElvUI once and does a clean install into each install's `Interface/AddOns`. The old ElvUI folders are removed first; other addons are left alone.
+- Prints the latest changelog entry.
+
+On Linux there is no native Battle.net, so it looks inside Wine prefixes (`$WINEPREFIX`, `~/.wine`, Lutris, Steam/Proton and Bottles).
+
+If it can't find your install, point it at the AddOns folder directly:
+
+```
+elvui_update --path "/path/to/World of Warcraft/_retail_/Interface/AddOns"
+```
+
+## Options
+
+```
+--path <dir>      AddOns folder to update (repeatable); skips Battle.net detection
+--force           Reinstall even if already up to date
+--no-changelog    Don't print the changelog
+--wait <seconds>  Keep the window open when done (default: 60 on Windows, 0 elsewhere)
+--version         Print version and exit
+```
+
+## Download
+
+Grab the binary for your platform from the [releases page](https://github.com/axlroden/elvui_update/releases):
+
+- `elvui_update-windows.exe`
+- `elvui_update-macos` (universal: Intel and Apple Silicon)
+- `elvui_update-linux` (static, x86_64)
+
+On macOS and Linux, make it executable first: `chmod +x elvui_update-macos`. macOS will block an unsigned download the first time; allow it under System Settings > Privacy & Security, or run `xattr -d com.apple.quarantine elvui_update-macos`.
+
+## Run it on a schedule
+
+**Windows:** Task Scheduler > Create Basic Task, point it at the exe, and add `--wait 0` as an argument so it doesn't sit for a minute.
+
+**macOS / Linux:** add a cron entry, e.g. `0 8 * * * /path/to/elvui_update`.
+
+## Building
+
+```
+cargo build --release
+```
+
+Pushing a change to the version in `Cargo.toml` builds all three platforms on GitHub Actions and publishes a release.
