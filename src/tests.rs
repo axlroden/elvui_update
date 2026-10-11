@@ -50,6 +50,8 @@ fn corrupt_product_db_is_an_error_not_a_crash() {
     assert!(productdb::parse(&[0x0a, 0x05, 0x01]).is_err());
 }
 
+// Wine prefixes only exist on Linux, and "d:" isn't a valid folder name on Windows.
+#[cfg(unix)]
 #[test]
 fn wine_paths() {
     let prefix = tmp("wine");
