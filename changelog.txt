@@ -1,3 +1,7 @@
+2.0.1
+New icon on every platform: embedded in the Windows .exe (with version info), an "ElvUI Updater" app for macOS, and a menu entry for Linux.
+macOS app opens in Terminal when started from Finder.
+
 2.0.0
 Rewritten in Rust: one small binary (~1.7 MB) for Windows, macOS and Linux, no Python needed.
 Finds every WoW install Battle.net lists, including classic beta; Linux support via Wine/Lutris/Proton/Bottles.
