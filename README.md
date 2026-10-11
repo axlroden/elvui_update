@@ -1,8 +1,8 @@
-<img src="assets/icon.png" width="96" align="right" alt="">
+<p align="center"><img src="assets/icon.png" width="128" alt=""></p>
 
-# elvui_update
+<h1 align="center">elvui_update</h1>
 
-Keeps ElvUI up to date in every World of Warcraft install on your machine. Works on Windows, macOS and Linux.
+<p align="center">Keeps ElvUI up to date in every World of Warcraft install on your machine.<br>Works on Windows, macOS and Linux.</p>
 
 ## What it does
 
