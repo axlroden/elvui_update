@@ -4,6 +4,8 @@ Finds every WoW install Battle.net lists, including classic beta; Linux support 
 Handles ElvUI's new single ElvUI.toc, does clean installs, retries on network errors and shows errors instead of crashing.
 --path, --force, --wait and --no-changelog options.
 
+1.1.9
+Add WoW Anniversary edition support
 1.1.8
 Changelog only latest version
 1.1.7
