@@ -2,8 +2,10 @@ name: Build and release
 
 on:
   push:
+    branches: [main]
     paths:
       - 'Cargo.toml'
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -13,68 +15,91 @@ jobs:
   build:
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            name: elvui_update-windows.exe
-          - os: macos-latest
-            name: elvui_update-macos
-          - os: ubuntu-latest
-            name: elvui_update-linux
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+
+      - name: Get version
+        shell: bash
+        run: echo "VERSION=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_ENV"
 
       - name: Test
         run: cargo test --release
 
+      # The icon and version info are embedded by build.rs.
       - name: Build (Windows)
         if: runner.os == 'Windows'
         env:
           # Static C runtime, so the .exe runs without the VC++ redistributable.
           RUSTFLAGS: -C target-feature=+crt-static
+        shell: bash
         run: |
           cargo build --release
-          copy target\release\elvui_update.exe ${{ matrix.name }}
+          mkdir dist
+          cp target/release/elvui_update.exe dist/elvui_update-windows.exe
 
+      # A bare binary can't carry an icon on macOS, so also ship it as an app.
       - name: Build (macOS universal)
         if: runner.os == 'macOS'
         run: |
           rustup target add x86_64-apple-darwin aarch64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           cargo build --release --target aarch64-apple-darwin
-          lipo -create -output ${{ matrix.name }} \
+          mkdir dist
+          lipo -create -output dist/elvui_update-macos \
             target/x86_64-apple-darwin/release/elvui_update \
             target/aarch64-apple-darwin/release/elvui_update
 
+          app="ElvUI Updater.app"
+          mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
+          cp dist/elvui_update-macos "$app/Contents/MacOS/elvui_update"
+          cp assets/icon.icns "$app/Contents/Resources/AppIcon.icns"
+          sed "s/@VERSION@/$VERSION/g" packaging/macos/Info.plist > "$app/Contents/Info.plist"
+          plutil -lint "$app/Contents/Info.plist"
+          codesign --force --deep --sign - "$app"
+          ditto -c -k --keepParent "$app" dist/elvui_update-macos-app.zip
+
+      # Linux binaries have no icon either; the tarball installs a menu entry with one.
       - name: Build (Linux static)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install -y musl-tools
           rustup target add x86_64-unknown-linux-musl
           cargo build --release --target x86_64-unknown-linux-musl
-          cp target/x86_64-unknown-linux-musl/release/elvui_update ${{ matrix.name }}
+          mkdir dist
+          cp target/x86_64-unknown-linux-musl/release/elvui_update dist/elvui_update-linux
 
-      - uses: actions/upload-artifact@v4
+          pkg=pkg/elvui_update
+          mkdir -p $pkg
+          cp dist/elvui_update-linux $pkg/elvui_update
+          cp assets/icon.png $pkg/elvui_update.png
+          cp assets/icon.svg $pkg/elvui_update.svg
+          cp packaging/linux/elvui_update.desktop packaging/linux/install.sh $pkg/
+          tar -C pkg -czf dist/elvui_update-linux.tar.gz elvui_update
+
+      - uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
+          name: ${{ matrix.os }}
+          path: dist/*
 
   release:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get version
         run: echo "VERSION=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_ENV"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.VERSION }}
           body_path: changelog.txt

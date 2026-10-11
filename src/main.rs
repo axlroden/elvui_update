@@ -18,7 +18,8 @@ Options:
   --path <dir>      AddOns folder to update (repeatable); skips Battle.net detection
   --force           Reinstall even if already up to date
   --no-changelog    Don't print the changelog
-  --wait <seconds>  Keep the window open when done (default: 60 on Windows, 0 elsewhere)
+  --wait <seconds>  Keep the window open when done (default: 60 on Windows and in
+                    the macOS app, 0 elsewhere)
   --api <url>       tukui API base URL
   --version         Print version and exit
   -h, --help        Show this help";
@@ -36,7 +37,7 @@ fn parse_args() -> Result<Opts, String> {
         paths: Vec::new(),
         force: false,
         changelog: true,
-        wait: if cfg!(windows) { 60 } else { 0 },
+        wait: if cfg!(windows) || in_mac_app() { 60 } else { 0 },
         api: "https://api.tukui.org/v1".into(),
     };
     let mut args = std::env::args().skip(1);
@@ -75,7 +76,35 @@ fn parse_args() -> Result<Opts, String> {
     Ok(o)
 }
 
+/// Running from inside "ElvUI Updater.app" rather than as a bare binary.
+fn in_mac_app() -> bool {
+    cfg!(target_os = "macos")
+        && std::env::current_exe()
+            .is_ok_and(|exe| exe.to_string_lossy().contains(".app/Contents/MacOS/"))
+}
+
+/// Started from Finder, the app has no terminal to print to, so open one and
+/// run there instead.
+fn reopen_in_terminal() {
+    use std::io::IsTerminal;
+    if !in_mac_app() || std::io::stdout().is_terminal() || std::env::args().len() > 1 {
+        return;
+    }
+    let Ok(exe) = std::env::current_exe() else {
+        return;
+    };
+    let opened = std::process::Command::new("open")
+        .args(["-a", "Terminal"])
+        .arg(exe)
+        .status()
+        .is_ok_and(|s| s.success());
+    if opened {
+        std::process::exit(0);
+    }
+}
+
 fn main() {
+    reopen_in_terminal();
     let (code, wait) = match parse_args() {
         Ok(o) => {
             let wait = o.wait;
